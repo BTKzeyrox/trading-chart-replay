@@ -90,7 +90,8 @@ export default function Chart({
 
     slice.forEach((c, i) => {
       const x = i * candleW + candleW / 2
-      const flat = c.open === c.close
+      const range = c.high - c.low || 1
+      const flat = Math.abs(c.open - c.close) <= range * 0.02
       const up = c.close >= c.open
       const color = flat ? FLAT : up ? UP : DOWN
       ctx.strokeStyle = color
