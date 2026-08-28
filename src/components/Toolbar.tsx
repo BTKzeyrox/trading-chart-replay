@@ -42,6 +42,7 @@ export default function Toolbar(props: Props) {
         padding: '10px 14px',
         background: '#11151d',
         borderBottom: '1px solid #1e2530',
+        flexShrink: 0,
       }}
     >
       <select

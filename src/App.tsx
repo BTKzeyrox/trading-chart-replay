@@ -74,7 +74,18 @@ export default function App() {
   const current = candles[cutoffIndex - panOffset]
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#0e1117', color: '#c9d1d9', fontFamily: 'system-ui, sans-serif' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100dvh',
+        width: '100vw',
+        background: '#0e1117',
+        color: '#c9d1d9',
+        fontFamily: 'system-ui, sans-serif',
+        overflow: 'hidden',
+      }}
+    >
       <Toolbar
         market={market}
         timeframe={timeframe}
@@ -103,7 +114,7 @@ export default function App() {
             : ''
         }
       />
-      <div style={{ flex: 1, position: 'relative' }}>
+      <div style={{ flex: 1, minHeight: 0, minWidth: 0, position: 'relative', overflow: 'hidden' }}>
         {loading && (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#7d8590' }}>
             Chargement des données…
