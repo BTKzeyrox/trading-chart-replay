@@ -12,6 +12,7 @@ interface Props {
 
 const UP = '#26a69a'
 const DOWN = '#ef5350'
+const FLAT = '#5a6270'
 const BG = '#0e1117'
 const GRID = '#1e2530'
 const TEXT = '#7d8590'
@@ -89,9 +90,11 @@ export default function Chart({
 
     slice.forEach((c, i) => {
       const x = i * candleW + candleW / 2
+      const flat = c.open === c.close
       const up = c.close >= c.open
-      ctx.strokeStyle = up ? UP : DOWN
-      ctx.fillStyle = up ? UP : DOWN
+      const color = flat ? FLAT : up ? UP : DOWN
+      ctx.strokeStyle = color
+      ctx.fillStyle = color
       ctx.lineWidth = 1
       ctx.beginPath()
       ctx.moveTo(x, yPrice(c.high))
@@ -173,10 +176,30 @@ export default function Chart({
     dragState.current = null
   }
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0]
+    if (!t) return
+    dragState.current = { startX: t.clientX, startPan: panOffset }
+  }
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const t = e.touches[0]
+    if (!t || !dragState.current) return
+    e.preventDefault()
+    const dx = t.clientX - dragState.current.startX
+    const w = containerRef.current?.clientWidth || 1
+    const candleW = w / visibleCount
+    const shift = Math.round(-dx / candleW)
+    const next = Math.max(0, dragState.current.startPan + shift)
+    onPanOffsetChange(Math.min(next, cutoffIndex))
+  }
+  const handleTouchEnd = () => {
+    dragState.current = null
+  }
+
   return (
     <div
       ref={containerRef}
-      style={{ width: '100%', height: '100%', cursor: 'grab' }}
+      style={{ width: '100%', height: '100%', cursor: 'grab', touchAction: 'none' }}
       onWheel={handleWheel}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
@@ -185,6 +208,9 @@ export default function Chart({
         endDrag()
         setHover(null)
       }}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
       <canvas ref={canvasRef} />
     </div>
