@@ -19,7 +19,9 @@ export default function App() {
 
   const [cutoffIndex, setCutoffIndex] = useState(0)
   const [panOffset, setPanOffset] = useState(0)
-  const [visibleCount, setVisibleCount] = useState(150)
+  const [visibleCount, setVisibleCount] = useState(() =>
+    typeof window !== 'undefined' && window.innerWidth < 500 ? 70 : 150
+  )
   const [datetimeValue, setDatetimeValue] = useState('')
   const [playing, setPlaying] = useState(false)
   const [speed, setSpeed] = useState(500)

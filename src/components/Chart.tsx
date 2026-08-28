@@ -48,7 +48,9 @@ export default function Chart({
     ctx.fillRect(0, 0, w, h)
 
     const rightEdge = Math.min(cutoffIndex - panOffset, candles.length - 1)
-    const leftEdge = Math.max(0, rightEdge - visibleCount + 1)
+    const maxByWidth = Math.max(20, Math.floor(w / 4))
+    const effectiveVisibleCount = Math.min(visibleCount, maxByWidth, candles.length)
+    const leftEdge = Math.max(0, rightEdge - effectiveVisibleCount + 1)
     const slice = candles.slice(leftEdge, rightEdge + 1)
     if (slice.length === 0) return
 
@@ -154,8 +156,16 @@ export default function Chart({
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault()
     const delta = e.deltaY > 0 ? 1 : -1
-    const next = Math.min(600, Math.max(20, visibleCount + delta * 5))
+    const w = containerRef.current?.clientWidth || 800
+    const maxByWidth = Math.max(20, Math.floor(w / 4))
+    const next = Math.min(600, maxByWidth, Math.max(20, visibleCount + delta * 5))
     onVisibleCountChange(next)
+  }
+
+  const effectiveVisible = () => {
+    const w = containerRef.current?.clientWidth || 800
+    const maxByWidth = Math.max(20, Math.floor(w / 4))
+    return Math.min(visibleCount, maxByWidth, candles.length || visibleCount)
   }
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -167,7 +177,7 @@ export default function Chart({
     if (dragState.current) {
       const dx = e.clientX - dragState.current.startX
       const w = containerRef.current?.clientWidth || 1
-      const candleW = w / visibleCount
+      const candleW = w / effectiveVisible()
       const shift = Math.round(-dx / candleW)
       const next = Math.max(0, dragState.current.startPan + shift)
       onPanOffsetChange(Math.min(next, cutoffIndex))
@@ -188,7 +198,7 @@ export default function Chart({
     e.preventDefault()
     const dx = t.clientX - dragState.current.startX
     const w = containerRef.current?.clientWidth || 1
-    const candleW = w / visibleCount
+    const candleW = w / effectiveVisible()
     const shift = Math.round(-dx / candleW)
     const next = Math.max(0, dragState.current.startPan + shift)
     onPanOffsetChange(Math.min(next, cutoffIndex))
