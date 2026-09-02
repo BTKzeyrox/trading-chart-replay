@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import Chart from './components/Chart'
 import Toolbar from './components/Toolbar'
+import NavBar, { type AppTab } from './components/NavBar'
+import LiveTab from './components/LiveTab'
 import { loadCandles } from './lib/loadCandles'
 import type { Candle, Market, Timeframe } from './lib/types'
 
@@ -11,6 +13,7 @@ function toLocalInputValue(ms: number): string {
 }
 
 export default function App() {
+  const [tab, setTab] = useState<AppTab>('replay')
   const [market, setMarket] = useState<Market>('XAUUSD')
   const [timeframe, setTimeframe] = useState<Timeframe>('H1')
   const [candles, setCandles] = useState<Candle[]>([])
@@ -88,56 +91,70 @@ export default function App() {
         overflow: 'hidden',
       }}
     >
-      <Toolbar
-        market={market}
-        timeframe={timeframe}
-        onMarketChange={setMarket}
-        onTimeframeChange={setTimeframe}
-        datetimeValue={datetimeValue}
-        onDatetimeChange={setDatetimeValue}
-        onJump={handleJump}
-        onStepBack={() => step(-1)}
-        onStepForward={() => step(1)}
-        onPlayPause={() => setPlaying((p) => !p)}
-        playing={playing}
-        onGoStart={() => {
-          setCutoffIndex(0)
-          setPanOffset(0)
-        }}
-        onGoEnd={() => {
-          setCutoffIndex(candles.length - 1)
-          setPanOffset(0)
-        }}
-        speed={speed}
-        onSpeedChange={setSpeed}
-        positionLabel={
-          current
-            ? `${new Date(current.time).toISOString().slice(0, 16).replace('T', ' ')} UTC — bougie ${cutoffIndex - panOffset + 1}/${candles.length}`
-            : ''
-        }
-      />
-      <div style={{ flex: 1, minHeight: 0, minWidth: 0, position: 'relative', overflow: 'hidden' }}>
-        {loading && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#7d8590' }}>
-            Chargement des données…
-          </div>
-        )}
-        {error && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: DOWN_COLOR }}>
-            {error}
-          </div>
-        )}
-        {!loading && !error && candles.length > 0 && (
-          <Chart
-            candles={candles}
-            cutoffIndex={cutoffIndex}
-            visibleCount={visibleCount}
-            onVisibleCountChange={setVisibleCount}
-            panOffset={panOffset}
-            onPanOffsetChange={setPanOffset}
+      <NavBar tab={tab} onTabChange={setTab} />
+
+      {tab === 'replay' && (
+        <>
+          <Toolbar
+            market={market}
+            timeframe={timeframe}
+            onMarketChange={setMarket}
+            onTimeframeChange={setTimeframe}
+            datetimeValue={datetimeValue}
+            onDatetimeChange={setDatetimeValue}
+            onJump={handleJump}
+            onStepBack={() => step(-1)}
+            onStepForward={() => step(1)}
+            onPlayPause={() => setPlaying((p) => !p)}
+            playing={playing}
+            onGoStart={() => {
+              setCutoffIndex(0)
+              setPanOffset(0)
+            }}
+            onGoEnd={() => {
+              setCutoffIndex(candles.length - 1)
+              setPanOffset(0)
+            }}
+            speed={speed}
+            onSpeedChange={setSpeed}
+            positionLabel={
+              current
+                ? `${new Date(current.time).toISOString().slice(0, 16).replace('T', ' ')} UTC — bougie ${cutoffIndex - panOffset + 1}/${candles.length}`
+                : ''
+            }
           />
-        )}
-      </div>
+          <div style={{ flex: 1, minHeight: 0, minWidth: 0, position: 'relative', overflow: 'hidden' }}>
+            {loading && (
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#7d8590' }}>
+                Chargement des données…
+              </div>
+            )}
+            {error && (
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: DOWN_COLOR }}>
+                {error}
+              </div>
+            )}
+            {!loading && !error && candles.length > 0 && (
+              <Chart
+                candles={candles}
+                cutoffIndex={cutoffIndex}
+                visibleCount={visibleCount}
+                onVisibleCountChange={setVisibleCount}
+                panOffset={panOffset}
+                onPanOffsetChange={setPanOffset}
+              />
+            )}
+          </div>
+        </>
+      )}
+
+      {tab === 'live' && <LiveTab />}
+
+      {tab === 'backtest' && (
+        <div style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#7d8590' }}>
+          Calendrier backtest — à venir
+        </div>
+      )}
     </div>
   )
 }
